@@ -1,19 +1,32 @@
-import { Note } from "../types/note";
+import axios from "axios";
+import { Note } from "@/types/note";
 
-export type NotesResponse = {
-  notes: Note[];
-  total: number;
+const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+
+const api = axios.create({
+  baseURL: "https://api-nodejs-todolist.herokuapp.com",
+  headers: {
+    Authorization: TOKEN ? `Bearer ${TOKEN}` : "",
+  },
+});
+
+export const fetchNotes = async (): Promise<Note[]> => {
+  const { data } = await api.get("/notes");
+  return data;
 };
 
-export const fetchNotes = async (
-  page: number = 1,
-  search: string = ""
-): Promise<NotesResponse> => {
-  const res = await fetch(`/api/notes?page=${page}&search=${search}`);
-  return res.json();
+export const fetchNoteById = async (id: number): Promise<Note> => {
+  const { data } = await api.get(`/notes/${id}`);
+  return data;
 };
 
-export const fetchNoteById = async (id: string): Promise<Note> => {
-  const res = await fetch(`/api/notes/${id}`);
-  return res.json();
+export const createNote = async (
+  note: Omit<Note, "id" | "createdAt">
+): Promise<Note> => {
+  const { data } = await api.post("/notes", note);
+  return data;
+};
+
+export const deleteNote = async (id: number): Promise<void> => {
+  await api.delete(`/notes/${id}`);
 };

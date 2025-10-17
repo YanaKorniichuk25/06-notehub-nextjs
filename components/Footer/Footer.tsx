@@ -8,8 +8,11 @@ export default function Footer() {
         <div className={styles.wrap}>
           <p>Developer: Yana Korniichuk</p>
           <p>
-            Contact us:{" "}
-            <a href="mailto:shumliakivska@gmail.com">shumliakivska@gmail.com</a>
+            Contact us:
+            <a href="mailto:shumliakivska@gmail.com">
+              {" "}
+              shumliakivska@gmail.com
+            </a>
           </p>
         </div>
       </div>
