@@ -1,32 +1,68 @@
 import axios from "axios";
-import { Note } from "@/types/note";
+import type { Note } from "../types/note";
+import { useQuery, type QueryFunctionContext } from "@tanstack/react-query";
 
-const TOKEN = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+export type NotesResponse = {
+  notes: Note[];
+  totalPages: number;
+};
 
-const api = axios.create({
-  baseURL: "https://api-nodejs-todolist.herokuapp.com",
-  headers: {
-    Authorization: TOKEN ? `Bearer ${TOKEN}` : "",
-  },
-});
+axios.defaults.baseURL = "https://notehub-public.goit.study/api";
 
-export const fetchNotes = async (): Promise<Note[]> => {
-  const { data } = await api.get("/notes");
+const getToken = (): string => {
+  const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
+  if (!token) throw new Error("Missing NEXT_PUBLIC_NOTEHUB_TOKEN");
+  return token;
+};
+
+export const fetchNotes = async (
+  page = 1,
+  search = ""
+): Promise<NotesResponse> => {
+  const token = getToken();
+  const response = await axios.get<NotesResponse>("notes", {
+    params: { page, perPage: 12, search },
+    headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
+  });
+  return response.data;
+};
+
+export const fetchNoteById = async (id: string | number): Promise<Note> => {
+  const token = getToken();
+  const { data } = await axios.get<Note>(`notes/${id}`, {
+    headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
+  });
   return data;
 };
 
-export const fetchNoteById = async (id: number): Promise<Note> => {
-  const { data } = await api.get(`/notes/${id}`);
+export const createNote = async (data: {
+  title: string;
+  content: string;
+  tag?: string;
+}): Promise<Note> => {
+  const token = getToken();
+  const response = await axios.post<Note>("notes", data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      accept: "application/json",
+      "Content-Type": "application/json",
+    },
+  });
+  return response.data;
+};
+
+export const deleteNote = async (id: string | number): Promise<Note> => {
+  const token = getToken();
+  const { data } = await axios.delete<Note>(`notes/${id}`, {
+    headers: { Authorization: `Bearer ${token}`, accept: "application/json" },
+  });
   return data;
 };
 
-export const createNote = async (
-  note: Omit<Note, "id" | "createdAt">
-): Promise<Note> => {
-  const { data } = await api.post("/notes", note);
-  return data;
-};
-
-export const deleteNote = async (id: number): Promise<void> => {
-  await api.delete(`/notes/${id}`);
-};
+export const useNotes = (currentPage: number, search: string) =>
+  useQuery<NotesResponse>({
+    queryKey: ["notes", currentPage, search],
+    queryFn: () => fetchNotes(currentPage, search),
+    placeholderData: { notes: [], totalPages: 1 },
+    staleTime: 30_000,
+  });

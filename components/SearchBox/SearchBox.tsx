@@ -1,12 +1,20 @@
-import React from "react";
+"use client";
 
-interface SearchBoxProps {
+import css from "./SearchBox.module.css";
+
+interface Props {
   value: string;
   onChange: (value: string) => void;
 }
 
-const SearchBox: React.FC<SearchBoxProps> = ({ value, onChange }) => (
-  <input value={value} onChange={(e) => onChange(e.target.value)} />
-);
-
-export default SearchBox;
+export default function SearchBox({ value, onChange }: Props) {
+  return (
+    <input
+      className={css.input}
+      type="text"
+      placeholder="Search notes..."
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  );
+}

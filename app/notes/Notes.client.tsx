@@ -1,81 +1,39 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { fetchNotes, deleteNote, createNote } from "@/lib/api";
-import { Note } from "@/types/note";
-import Link from "next/link";
 import { useState } from "react";
-import styles from "./NotesPage.module.css";
+import { useNotes, deleteNote } from "../../lib/api";
+import NoteList from "@/components/NoteList/NoteList";
+import Pagination from "@/components/Pagination/Pagination";
+import SearchBox from "@/components/SearchBox/SearchBox";
 
-export default function NotesClient() {
-  const {
-    data: notes,
-    isLoading,
-    error,
-    refetch,
-  } = useQuery<Note[]>({
-    queryKey: ["notes"],
-    queryFn: fetchNotes,
-  });
+const NotesClient = () => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [search, setSearch] = useState("");
 
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const { data, isLoading, error } = useNotes(currentPage, search);
+
+  const notes = data?.notes ?? [];
+  const totalPages = data?.totalPages ?? 1;
+
+  const handleDelete = async (id: number | string) => {
+    await deleteNote(id);
+  };
 
   if (isLoading) return <p>Loading, please wait...</p>;
-  if (error) return <p>Something went wrong.</p>;
-
-  const handleCreate = async () => {
-    if (!title.trim()) return;
-    await createNote({ title, content });
-    setTitle("");
-    setContent("");
-    refetch();
-  };
-
-  const handleDelete = async (id: number) => {
-    await deleteNote(id);
-    refetch();
-  };
+  if (error)
+    return <p>Could not fetch the list of notes. {(error as Error).message}</p>;
 
   return (
-    <main className={styles.container}>
-      <h2 className={styles.title}>Notes</h2>
-      <div className={styles.form}>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Title"
-          className={styles.input}
-        />
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Content"
-          className={styles.textarea}
-        />
-        <button onClick={handleCreate} className={styles.button}>
-          Create
-        </button>
-      </div>
-
-      <ul className={styles.list}>
-        {notes?.map((note) => (
-          <li key={note.id} className={styles.item}>
-            <h3 className={styles.noteTitle}>{note.title}</h3>
-            <p className={styles.noteContent}>{note.content}</p>
-            <p className={styles.noteDate}>{note.createdAt}</p>
-            <Link href={`/notes/${note.id}`} className={styles.link}>
-              View details
-            </Link>
-            <button
-              onClick={() => handleDelete(note.id)}
-              className={styles.delete}
-            >
-              Delete
-            </button>
-          </li>
-        ))}
-      </ul>
-    </main>
+    <div>
+      <SearchBox value={search} onChange={setSearch} />
+      <NoteList notes={notes} onDelete={handleDelete} />
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
+    </div>
   );
-}
+};
+
+export default NotesClient;

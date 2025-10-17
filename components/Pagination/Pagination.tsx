@@ -1,30 +1,33 @@
-import React from "react";
+import css from "./Pagination.module.css";
 
-interface PaginationProps {
-  page: number;
+interface Props {
+  currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
 }
 
-const Pagination: React.FC<PaginationProps> = ({
-  page,
+export default function Pagination({
+  currentPage,
   totalPages,
   onPageChange,
-}) => (
-  <div>
-    <button disabled={page <= 1} onClick={() => onPageChange(page - 1)}>
-      Prev
-    </button>
-    <span>
-      {page} / {totalPages}
-    </span>
-    <button
-      disabled={page >= totalPages}
-      onClick={() => onPageChange(page + 1)}
-    >
-      Next
-    </button>
-  </div>
-);
-
-export default Pagination;
+}: Props) {
+  return (
+    <div className={css.pagination}>
+      <button
+        disabled={currentPage === 1}
+        onClick={() => onPageChange(currentPage - 1)}
+      >
+        Prev
+      </button>
+      <span>
+        {currentPage} / {totalPages}
+      </span>
+      <button
+        disabled={currentPage === totalPages}
+        onClick={() => onPageChange(currentPage + 1)}
+      >
+        Next
+      </button>
+    </div>
+  );
+}
