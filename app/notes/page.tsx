@@ -1,7 +1,5 @@
 import NotesClient from "./Notes.client";
 
-const NotesPage = () => {
+export default function NotesPage() {
   return <NotesClient />;
-};
-
-export default NotesPage;
+}

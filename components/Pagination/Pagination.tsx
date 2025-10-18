@@ -1,30 +1,42 @@
 import css from "./Pagination.module.css";
 
-interface Props {
+type Props = {
   currentPage: number;
   totalPages: number;
-  onPageChange: (page: number) => void;
-}
+  setCurrentPage: (page: number) => void;
+};
 
 export default function Pagination({
   currentPage,
   totalPages,
-  onPageChange,
+  setCurrentPage,
 }: Props) {
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
     <div className={css.pagination}>
       <button
         disabled={currentPage === 1}
-        onClick={() => onPageChange(currentPage - 1)}
+        onClick={() => setCurrentPage(currentPage - 1)}
+        className={css.prev}
       >
         Prev
       </button>
-      <span>
-        {currentPage} / {totalPages}
-      </span>
+
+      {pages.map((page) => (
+        <button
+          key={page}
+          className={page === currentPage ? css.active : ""}
+          onClick={() => setCurrentPage(page)}
+        >
+          {page}
+        </button>
+      ))}
+
       <button
         disabled={currentPage === totalPages}
-        onClick={() => onPageChange(currentPage + 1)}
+        onClick={() => setCurrentPage(currentPage + 1)}
+        className={css.next}
       >
         Next
       </button>
