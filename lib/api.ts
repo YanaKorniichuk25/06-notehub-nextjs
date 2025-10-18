@@ -34,3 +34,13 @@ export const fetchNoteById = async (id: number): Promise<Note> => {
   const { data } = await api.get<Note>(`/notes/${id}`);
   return data;
 };
+
+// Новий хук для Notes.client.tsx
+import { useQuery } from "@tanstack/react-query";
+
+export const useFetchNotes = (page: number, search: string) => {
+  return useQuery<NotesResponse, Error>({
+    queryKey: ["notes", page, search],
+    queryFn: () => fetchNotes(page, search),
+  });
+};

@@ -1,13 +1,14 @@
 "use client";
 import { useState } from "react";
-import { Note } from "../../types/note";
+import { Note } from "@/types/note";
 import css from "./NoteForm.module.css";
 
 interface Props {
   onAdd: (note: Note) => void;
+  onClose: () => void;
 }
 
-export function NoteForm({ onAdd }: Props) {
+export function NoteForm({ onAdd, onClose }: Props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
@@ -24,6 +25,7 @@ export function NoteForm({ onAdd }: Props) {
     onAdd(newNote);
     setTitle("");
     setContent("");
+    onClose();
   };
 
   return (

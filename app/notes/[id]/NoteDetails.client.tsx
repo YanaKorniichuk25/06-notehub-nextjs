@@ -1,16 +1,16 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchNoteById } from "../../../lib/api";
-import { Note } from "../../../types/note";
-import styles from "./NoteDetails.module.css";
+import { fetchNoteById } from "@/lib/api";
+import type { Note } from "@/types/note";
+import css from "./NoteDetails.module.css";
 
 interface NoteDetailsClientProps {
   noteId: number;
   initialNote?: Note;
 }
 
-export function NoteDetailsClient({
+export default function NoteDetailsClient({
   noteId,
   initialNote,
 }: NoteDetailsClientProps) {
@@ -22,6 +22,7 @@ export function NoteDetailsClient({
     queryKey: ["note", noteId],
     queryFn: () => fetchNoteById(noteId),
     initialData: initialNote,
+    staleTime: 30_000,
   });
 
   if (isLoading) return <p>Loading...</p>;
@@ -29,10 +30,10 @@ export function NoteDetailsClient({
   if (!note) return <p>Note not found.</p>;
 
   return (
-    <div className={styles.noteDetails}>
-      <h2 className={styles.title}>{note.title}</h2>
-      <p className={styles.content}>{note.content}</p>
-      <p className={styles.date}>
+    <div className={css.noteDetails}>
+      <h2 className={css.title}>{note.title}</h2>
+      <p className={css.content}>{note.content}</p>
+      <p className={css.date}>
         Created at: {new Date(note.createdAt).toLocaleString()}
       </p>
     </div>

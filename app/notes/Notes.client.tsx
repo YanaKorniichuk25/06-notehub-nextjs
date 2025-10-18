@@ -1,28 +1,78 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { fetchNotes, NotesResponse } from "@/lib/api";
+import { useState, useEffect, ChangeEvent } from "react";
+import { useDebounce } from "use-debounce";
+import { Toaster } from "react-hot-toast";
+import { useFetchNotes } from "@/lib/api";
+import { NoteForm } from "@/components/NoteForm/NoteForm";
+import { NoteList } from "@/components/NoteList/NoteList";
+import { Pagination } from "@/components/Pagination/Pagination";
+import Modal from "@/components/Modal/Modal";
+import { SearchBox } from "@/components/SearchBox/SearchBox";
+import { Note } from "@/types/note";
+import css from "./NotesPage.module.css";
 
-export default function NotesClient() {
-  const [page, setPage] = useState(1);
-  const [search, setSearch] = useState("");
+export default function Notes() {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [rawSearch, setRawSearch] = useState("");
+  const [debouncedSearch] = useDebounce(rawSearch, 300);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [localNotes, setLocalNotes] = useState<Note[]>([]);
 
-  const { data, isLoading, error } = useQuery<NotesResponse>({
-    queryKey: ["notes", page, search],
-    queryFn: () => fetchNotes(page, search),
-    placeholderData: { notes: [], totalPages: 1 },
-    staleTime: 30_000,
-  });
+  const { data, isLoading, isError } = useFetchNotes(
+    currentPage,
+    debouncedSearch
+  );
 
-  if (isLoading) return <p>Loading, please wait...</p>;
-  if (error) return <p>Could not fetch the list of notes.</p>;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  const handleAddNote = (newNote: Note) => {
+    setLocalNotes([newNote, ...localNotes]);
+  };
+
+  const notesToShow = [...localNotes, ...(data?.notes || [])];
 
   return (
-    <div>
-      {data?.notes.map((note) => (
-        <div key={note.id}>{note.title}</div>
-      ))}
+    <div className={css.app}>
+      <header className={css.toolbar}>
+        <SearchBox
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setRawSearch(e.target.value)
+          }
+        />
+        {data?.totalPages && data.totalPages > 1 && (
+          <Pagination
+            pageCount={data.totalPages}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
+        )}
+        <button onClick={() => setIsModalOpen(true)} className={css.button}>
+          Create note +
+        </button>
+      </header>
+
+      {isLoading && <p>Loading...</p>}
+      {isError && <p>Error loading notes</p>}
+
+      {notesToShow.length ? (
+        <NoteList notes={notesToShow} />
+      ) : (
+        <p>No notes found</p>
+      )}
+
+      {isModalOpen && (
+        <Modal onClose={() => setIsModalOpen(false)}>
+          <NoteForm
+            onAdd={handleAddNote}
+            onClose={() => setIsModalOpen(false)}
+          />
+        </Modal>
+      )}
+
+      <Toaster />
     </div>
   );
 }

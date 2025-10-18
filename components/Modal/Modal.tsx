@@ -1,30 +1,31 @@
-"use client";
-
 import css from "./Modal.module.css";
+import { useEffect, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 type Props = {
-  isOpen: boolean;
   onClose: () => void;
-  onConfirm: () => void;
-  message?: string;
+  children: ReactNode;
 };
 
-export default function Modal({ isOpen, onClose, onConfirm, message }: Props) {
-  if (!isOpen) return null;
+export default function Modal({ onClose, children }: Props) {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [onClose]);
 
-  return (
-    <div className={css.overlay}>
-      <div className={css.modal}>
-        <p className={css.message}>{message || "Are you sure?"}</p>
-        <div className={css.buttons}>
-          <button className={css.confirm} onClick={onConfirm}>
-            Yes
-          </button>
-          <button className={css.cancel} onClick={onClose}>
-            No
-          </button>
-        </div>
-      </div>
-    </div>
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) onClose();
+  };
+
+  return createPortal(
+    <div className={css.backdrop} onClick={handleBackdropClick}>
+      <div className={css.modal}>{children}</div>
+    </div>,
+    document.body
   );
 }
