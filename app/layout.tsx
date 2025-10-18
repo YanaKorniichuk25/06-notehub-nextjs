@@ -1,11 +1,11 @@
 import "./globals.css";
-import Header from "@/components/Header/Header";
-import Footer from "@/components/Footer/Footer";
-import TanStackProvider from "@/components/TanStackProvider/TanStackProvider";
+import { Footer } from "../components/Footer/Footer";
+import { Header } from "../components/Header/Header";
+import { TanStackProvider } from "../components/TanStackProvider/TanStackProvider";
 
 export const metadata = {
   title: "NoteHub",
-  description: "Personal notes management app",
+  description: "Simple note management app",
 };
 
 export default function RootLayout({
@@ -18,7 +18,7 @@ export default function RootLayout({
       <body>
         <TanStackProvider>
           <Header />
-          {children}
+          <main>{children}</main>
           <Footer />
         </TanStackProvider>
       </body>

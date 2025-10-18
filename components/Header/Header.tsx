@@ -1,7 +1,8 @@
+"use client";
 import Link from "next/link";
 import css from "./Header.module.css";
 
-export default function Header() {
+export function Header() {
   return (
     <header className={css.header}>
       <Link href="/" aria-label="Home">

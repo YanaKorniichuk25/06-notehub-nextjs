@@ -1,24 +1,29 @@
 "use client";
-
 import { useState } from "react";
+import { Note } from "../../types/note";
 import css from "./NoteForm.module.css";
-import type { Note } from "@/types/note";
 
-type Props = {
-  onCreate: (data: { title: string; content: string; tag: string }) => void;
-};
+interface Props {
+  onAdd: (note: Note) => void;
+}
 
-export default function NoteForm({ onCreate }: Props) {
+export function NoteForm({ onAdd }: Props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [tag, setTag] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onCreate({ title, content, tag });
+    if (!title || !content) return;
+
+    const newNote: Note = {
+      id: Date.now(),
+      title,
+      content,
+      createdAt: new Date().toISOString(),
+    };
+    onAdd(newNote);
     setTitle("");
     setContent("");
-    setTag("");
   };
 
   return (
@@ -28,26 +33,13 @@ export default function NoteForm({ onCreate }: Props) {
         placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        required
-        className={css.input}
       />
       <textarea
         placeholder="Content"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        required
-        className={css.textarea}
       />
-      <input
-        type="text"
-        placeholder="Tag"
-        value={tag}
-        onChange={(e) => setTag(e.target.value)}
-        className={css.input}
-      />
-      <button type="submit" className={css.button}>
-        Create Note
-      </button>
+      <button type="submit">Add Note</button>
     </form>
   );
 }

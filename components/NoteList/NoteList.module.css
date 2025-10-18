@@ -92,3 +92,41 @@
 .link:hover {
   background-color: #0b5ed7;
 }
+
+.routerLink {
+  position: relative;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  color: #0b5ed7;
+}
+
+.routerLink::before,
+.routerLink::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 1px;
+  background-color: #0b5ed7;
+  transition: width 0.3s ease-in-out;
+}
+
+.routerLink::before {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0;
+}
+
+.routerLink::after {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 100%;
+}
+
+.routerLink:hover::before {
+  width: 100%;
+}
+
+.routerLink:hover::after {
+  width: 100%;
+}
