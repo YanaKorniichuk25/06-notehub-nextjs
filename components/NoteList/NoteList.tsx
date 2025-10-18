@@ -4,9 +4,10 @@ import type { Note } from "@/types/note";
 
 type Props = {
   notes: Note[];
+  onDelete?: (id: number) => void;
 };
 
-export default function NoteList({ notes }: Props) {
+export default function NoteList({ notes, onDelete }: Props) {
   return (
     <ul className={css.list}>
       {notes.map((note) => (
@@ -17,7 +18,11 @@ export default function NoteList({ notes }: Props) {
             <Link href={`/notes/${note.id}`} className={css.view}>
               View details
             </Link>
-            {/* Тут можна додати Delete, якщо потрібно */}
+            {onDelete && (
+              <button className={css.delete} onClick={() => onDelete(note.id)}>
+                Delete
+              </button>
+            )}
           </div>
         </li>
       ))}

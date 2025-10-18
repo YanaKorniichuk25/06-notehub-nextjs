@@ -1,40 +1,52 @@
 "use client";
-import { useState } from "react";
-import { createNote } from "@/lib/api";
-import css from "./NoteForm.module.css";
 
-interface Props {
-  onCreate: () => void;
-}
+import { useState } from "react";
+import css from "./NoteForm.module.css";
+import type { Note } from "@/types/note";
+
+type Props = {
+  onCreate: (data: { title: string; content: string; tag: string }) => void;
+};
 
 export default function NoteForm({ onCreate }: Props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [tag, setTag] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    await createNote({ title, content, tag: "general" });
+    onCreate({ title, content, tag });
     setTitle("");
     setContent("");
-    onCreate();
+    setTag("");
   };
 
   return (
     <form className={css.form} onSubmit={handleSubmit}>
       <input
-        className={css.input}
+        type="text"
+        placeholder="Title"
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
+        required
+        className={css.input}
       />
       <textarea
-        className={css.textarea}
+        placeholder="Content"
         value={content}
         onChange={(e) => setContent(e.target.value)}
-        placeholder="Content"
+        required
+        className={css.textarea}
       />
-      <button className={css.button} type="submit">
-        Add Note
+      <input
+        type="text"
+        placeholder="Tag"
+        value={tag}
+        onChange={(e) => setTag(e.target.value)}
+        className={css.input}
+      />
+      <button type="submit" className={css.button}>
+        Create Note
       </button>
     </form>
   );
