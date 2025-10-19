@@ -1,47 +1,58 @@
 "use client";
-import { useState } from "react";
+
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 import { Note } from "@/types/note";
 import css from "./NoteForm.module.css";
 
-interface Props {
-  onAdd: (note: Note) => void;
-  onClose: () => void;
+export interface NoteFormProps {
+  onSubmit: (payload: Omit<Note, "id" | "createdAt" | "updatedAt">) => void;
+  onCancel: () => void;
 }
 
-export function NoteForm({ onAdd, onClose }: Props) {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+interface FormValues {
+  title: string;
+  content: string;
+  tag: string;
+}
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !content) return;
-
-    const newNote: Note = {
-      id: Date.now(),
-      title,
-      content,
-      createdAt: new Date().toISOString(),
-    };
-    onAdd(newNote);
-    setTitle("");
-    setContent("");
-    onClose();
-  };
+export default function NoteForm({ onSubmit, onCancel }: NoteFormProps) {
+  const initialValues: FormValues = { title: "", content: "", tag: "" };
+  const validationSchema = Yup.object({
+    title: Yup.string().required("Title is required"),
+    content: Yup.string().required("Content is required"),
+    tag: Yup.string().required("Tag is required"),
+  });
 
   return (
-    <form className={css.form} onSubmit={handleSubmit}>
-      <input
-        type="text"
-        placeholder="Title"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-      />
-      <textarea
-        placeholder="Content"
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-      />
-      <button type="submit">Add Note</button>
-    </form>
+    <Formik
+      initialValues={initialValues}
+      validationSchema={validationSchema}
+      onSubmit={(values) => onSubmit(values)}
+    >
+      <Form className={css.form}>
+        <label>
+          Title
+          <Field type="text" name="title" />
+          <ErrorMessage name="title" component="div" className={css.error} />
+        </label>
+        <label>
+          Content
+          <Field as="textarea" name="content" />
+          <ErrorMessage name="content" component="div" className={css.error} />
+        </label>
+        <label>
+          Tag
+          <Field type="text" name="tag" />
+          <ErrorMessage name="tag" component="div" className={css.error} />
+        </label>
+        <div className={css.buttons}>
+          <button type="submit">Add Note</button>
+          <button type="button" onClick={onCancel}>
+            Cancel
+          </button>
+        </div>
+      </Form>
+    </Formik>
   );
 }

@@ -1,14 +1,14 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent } from "react";
+import { useState, useEffect } from "react";
 import { useDebounce } from "use-debounce";
-import { Toaster } from "react-hot-toast";
-import { useFetchNotes } from "@/lib/api";
-import { NoteForm } from "@/components/NoteForm/NoteForm";
-import { NoteList } from "@/components/NoteList/NoteList";
-import { Pagination } from "@/components/Pagination/Pagination";
+import { Toaster, toast } from "react-hot-toast";
+import { useFetchNotes, createNote, deleteNote } from "@/lib/api";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import NoteList from "@/components/NoteList/NoteList";
+import Pagination from "@/components/Pagination/Pagination";
 import Modal from "@/components/Modal/Modal";
-import { SearchBox } from "@/components/SearchBox/SearchBox";
+import SearchBox from "@/components/SearchBox/SearchBox";
 import { Note } from "@/types/note";
 import css from "./NotesPage.module.css";
 
@@ -17,9 +17,8 @@ export default function Notes() {
   const [rawSearch, setRawSearch] = useState("");
   const [debouncedSearch] = useDebounce(rawSearch, 300);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [localNotes, setLocalNotes] = useState<Note[]>([]);
 
-  const { data, isLoading, isError } = useFetchNotes(
+  const { data, isLoading, isError, refetch } = useFetchNotes(
     currentPage,
     debouncedSearch
   );
@@ -28,24 +27,37 @@ export default function Notes() {
     setCurrentPage(1);
   }, [debouncedSearch]);
 
-  const handleAddNote = (newNote: Note) => {
-    setLocalNotes([newNote, ...localNotes]);
+  const handleAddNote = async (
+    newNote: Omit<Note, "id" | "createdAt" | "updatedAt">
+  ) => {
+    try {
+      const created = await createNote(newNote);
+      toast.success("Note created!");
+      refetch(); // оновлюємо список нотаток
+      setIsModalOpen(false);
+    } catch (err) {
+      toast.error("Failed to create note");
+    }
   };
 
-  const notesToShow = [...localNotes, ...(data?.notes || [])];
+  const handleDeleteNote = async (id: string) => {
+    try {
+      await deleteNote(id);
+      toast.success("Note deleted!");
+      refetch();
+    } catch (err) {
+      toast.error("Failed to delete note");
+    }
+  };
 
   return (
     <div className={css.app}>
       <header className={css.toolbar}>
-        <SearchBox
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            setRawSearch(e.target.value)
-          }
-        />
+        <SearchBox value={rawSearch} onChange={setRawSearch} />
         {data?.totalPages && data.totalPages > 1 && (
           <Pagination
-            pageCount={data.totalPages}
             currentPage={currentPage}
+            totalPages={data.totalPages}
             onPageChange={setCurrentPage}
           />
         )}
@@ -57,8 +69,8 @@ export default function Notes() {
       {isLoading && <p>Loading...</p>}
       {isError && <p>Error loading notes</p>}
 
-      {notesToShow.length ? (
-        <NoteList notes={notesToShow} />
+      {data?.notes.length ? (
+        <NoteList notes={data.notes} onDelete={handleDeleteNote} />
       ) : (
         <p>No notes found</p>
       )}
@@ -66,8 +78,8 @@ export default function Notes() {
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
           <NoteForm
-            onAdd={handleAddNote}
-            onClose={() => setIsModalOpen(false)}
+            onSubmit={handleAddNote}
+            onCancel={() => setIsModalOpen(false)}
           />
         </Modal>
       )}

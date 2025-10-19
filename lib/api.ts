@@ -1,46 +1,54 @@
 import axios from "axios";
-import { Note } from "@/types/note";
+import { useQuery } from "@tanstack/react-query";
+import { Note, NotesResponse } from "@/types/note";
 
-const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
-
-if (!token) {
-  throw new Error("API token is not defined in .env.local");
-}
-
-export type NotesResponse = {
-  notes: Note[];
-  totalPages: number;
-};
+const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN ?? "";
 
 const api = axios.create({
-  baseURL: "https://notehub-public.goit.study/api",
+  baseURL:
+    process.env.NEXT_PUBLIC_NOTEHUB_BASE_URL ??
+    "https://notehub-public.goit.study/api",
   headers: {
-    accept: "application/json",
-    Authorization: `Bearer ${token}`,
+    Authorization: token ? `Bearer ${token}` : undefined,
+    "Content-Type": "application/json",
   },
 });
 
-export const fetchNotes = async (
-  page = 1,
-  search = ""
-): Promise<NotesResponse> => {
-  const { data } = await api.get<NotesResponse>("/notes", {
-    params: { page, perPage: 12, search },
-  });
-  return data;
+export const fetchNotes = async (params?: {
+  q?: string;
+  page?: number;
+}): Promise<NotesResponse> => {
+  const { q, page = 1 } = params ?? {};
+  const queryParams: Record<string, string | number> = { page };
+  if (q?.trim()) queryParams.q = q;
+
+  const resp = await api.get<NotesResponse>("/notes", { params: queryParams });
+  return resp.data;
 };
 
-export const fetchNoteById = async (id: number): Promise<Note> => {
-  const { data } = await api.get<Note>(`/notes/${id}`);
-  return data;
-};
-
-// Новий хук для Notes.client.tsx
-import { useQuery } from "@tanstack/react-query";
-
-export const useFetchNotes = (page: number, search: string) => {
+// ✅ додаємо кастомний хук, який очікує компонент Notes.client.tsx
+export const useFetchNotes = (page: number, q: string) => {
   return useQuery<NotesResponse, Error>({
-    queryKey: ["notes", page, search],
-    queryFn: () => fetchNotes(page, search),
+    queryKey: ["notes", page, q],
+    queryFn: () => fetchNotes({ page, q }),
+    placeholderData: (prev) => prev, // тримає попередні дані під час оновлення
   });
+};
+
+export const fetchNoteById = async (id: string): Promise<Note> => {
+  const resp = await api.get<{ data: Note }>(`/notes/${id}`);
+  return resp.data.data;
+};
+
+export const createNote = async (payload: {
+  title: string;
+  content: string;
+  tag: string;
+}): Promise<Note> => {
+  const resp = await api.post<{ data: Note }>("/notes", payload);
+  return resp.data.data;
+};
+
+export const deleteNote = async (id: string): Promise<void> => {
+  await api.delete(`/notes/${id}`);
 };

@@ -5,15 +5,15 @@ import { fetchNoteById } from "@/lib/api";
 import type { Note } from "@/types/note";
 import css from "./NoteDetails.module.css";
 
-interface NoteDetailsClientProps {
-  noteId: number;
+interface NoteDetailsProps {
+  noteId: string;
   initialNote?: Note;
 }
 
 export default function NoteDetailsClient({
   noteId,
   initialNote,
-}: NoteDetailsClientProps) {
+}: NoteDetailsProps) {
   const {
     data: note,
     isLoading,
