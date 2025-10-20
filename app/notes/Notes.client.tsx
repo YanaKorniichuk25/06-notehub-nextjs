@@ -1,55 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useDebounce } from "use-debounce";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Toaster } from "react-hot-toast";
 import { fetchNotes, NotesResponse } from "@/lib/api";
-import NoteList from "@/components/NoteList/NoteList";
-import Pagination from "@/components/Pagination/Pagination";
-import NoteForm from "@/components/NoteForm/NoteForm";
-import Modal from "@/components/Modal/Modal";
 import SearchBox from "@/components/SearchBox/SearchBox";
+import Pagination from "@/components/Pagination/Pagination";
+import Modal from "@/components/Modal/Modal";
+import NoteForm from "@/components/NoteForm/NoteForm";
+import NoteList from "@/components/NoteList/NoteList";
 import css from "./NotesPage.module.css";
 
-export default function Notes() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [rawSearch, setRawSearch] = useState("");
-  const [debouncedSearch] = useDebounce(rawSearch, 300);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+function useDebounce<T>(value: T, delay = 300): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedSearch]);
+    const handler = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+export default function NotesClient() {
+  const [page, setPage] = useState<number>(1);
+  const [search, setSearch] = useState<string>("");
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+
+  const debouncedSearch = useDebounce(search, 300);
 
   const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
-    queryKey: ["notes", currentPage, debouncedSearch],
-    queryFn: () => fetchNotes(currentPage, debouncedSearch),
+    queryKey: ["notes", page, debouncedSearch],
+    queryFn: () => fetchNotes(page, debouncedSearch),
     staleTime: 1000 * 60,
+    placeholderData: () => ({ notes: [], totalPages: 1 }),
   });
 
-  const notes = data?.notes ?? [];
-  const totalPages = data?.totalPages ?? 1;
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading notes</p>;
 
   return (
     <div className={css.container}>
       <div className={css.controls}>
         <button onClick={() => setIsModalOpen(true)}>Create note</button>
-        <SearchBox
-          value={rawSearch} // передаємо value
-          onChange={setRawSearch} // передаємо колбек для зміни
-        />
+        <SearchBox onChange={setSearch} />
       </div>
 
-      {isLoading && <p>Loading...</p>}
-      {isError && <p>Error loading notes</p>}
-
-      <NoteList notes={notes} />
+      <NoteList notes={data?.notes ?? []} />
 
       <Pagination
-        pageCount={totalPages}
-        currentPage={currentPage}
-        onPageChange={setCurrentPage}
+        pageCount={data?.totalPages ?? 1}
+        currentPage={page}
+        onPageChange={(p: number) => setPage(p)}
       />
 
       {isModalOpen && (
@@ -57,8 +58,6 @@ export default function Notes() {
           <NoteForm onClose={() => setIsModalOpen(false)} />
         </Modal>
       )}
-
-      <Toaster />
     </div>
   );
 }

@@ -1,24 +1,29 @@
 "use client";
 
+import { useState } from "react";
 import css from "./SearchBox.module.css";
 
 export interface SearchBoxProps {
-  value: string;
   onChange: (value: string) => void;
   placeholder?: string;
 }
 
 export default function SearchBox({
-  value,
   onChange,
   placeholder = "Search notes...",
 }: SearchBoxProps) {
+  const [value, setValue] = useState("");
+
   return (
     <input
       type="text"
       className={css.input}
       value={value}
-      onChange={(e) => onChange(e.target.value)}
+      onChange={(e) => {
+        const v = e.target.value;
+        setValue(v);
+        onChange(v);
+      }}
       placeholder={placeholder}
     />
   );
