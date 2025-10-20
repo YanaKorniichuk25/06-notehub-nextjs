@@ -4,19 +4,14 @@ import { Note } from "@/types/note";
 
 const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
-// Axios defaults
 const api = axios.create({
-  baseURL:
-    process.env.NEXT_PUBLIC_NOTEHUB_BASE_URL ??
-    "https://notehub-public.goit.study/api",
+  baseURL: "https://notehub-public.goit.study/api",
   headers: {
     accept: "application/json",
-    Authorization: token ? `Bearer ${token}` : undefined,
-    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
   },
 });
 
-// Error notifications
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -32,26 +27,28 @@ export interface NotesResponse {
   totalPages: number;
 }
 
-// API-функції
 export const fetchNotes = async (
   page: number,
   search: string
 ): Promise<NotesResponse> => {
-  const { data } = await api.get<{
-    data: { items: Note[]; totalPages: number };
-  }>("/notes", {
-    params: { page, perPage: 12, search },
-  });
+  // ✅ нова структура відповіді
+  const { data } = await api.get<{ notes: Note[]; totalPages: number }>(
+    "/notes",
+    {
+      params: { page, perPage: 12, search },
+    }
+  );
 
-  const items = data.data?.items ?? [];
-  const totalPages = data.data?.totalPages ?? 1;
+  const notes = data.notes ?? [];
+  const totalPages = data.totalPages ?? 1;
 
-  return { notes: items, totalPages };
+  return { notes, totalPages };
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
-  const { data } = await api.get<{ data: Note }>(`/notes/${id}`);
-  return data.data;
+  // ✅ ендпоінт повертає { note: {...} }, не { data: {...} }
+  const { data } = await api.get<{ note: Note }>(`/notes/${id}`);
+  return data.note;
 };
 
 export const createNote = async (noteData: {
@@ -59,13 +56,13 @@ export const createNote = async (noteData: {
   content: string;
   tag: string;
 }): Promise<Note> => {
-  const { data } = await api.post<{ data: Note }>("/notes", noteData);
+  const { data } = await api.post<{ note: Note }>("/notes", noteData);
   toast.success("Note added successfully!");
-  return data.data;
+  return data.note;
 };
 
 export const deleteNote = async (id: string): Promise<Note> => {
-  const { data } = await api.delete<{ data: Note }>(`/notes/${id}`);
+  const { data } = await api.delete<{ note: Note }>(`/notes/${id}`);
   toast.success("Note deleted successfully!");
-  return data.data;
+  return data.note;
 };

@@ -63,35 +63,52 @@ export default function NoteForm({ onClose }: NoteFormProps) {
     >
       {({ isSubmitting }) => (
         <Form className={css.form}>
-          <label>
-            Title
-            <Field name="title" />
-            <ErrorMessage name="title" component="div" />
-          </label>
+          <div className={css.formGroup}>
+            <label htmlFor="title">Title</label>
+            <Field id="title" name="title" className={css.input} />
+            <ErrorMessage name="title" component="div" className={css.error} />
+          </div>
 
-          <label>
-            Content
-            <Field name="content" as="textarea" />
-            <ErrorMessage name="content" component="div" />
-          </label>
+          <div className={css.formGroup}>
+            <label htmlFor="content">Content</label>
+            <Field
+              id="content"
+              name="content"
+              as="textarea"
+              className={css.textarea}
+            />
+            <ErrorMessage
+              name="content"
+              component="div"
+              className={css.error}
+            />
+          </div>
 
-          <label>
-            Tag
-            <Field name="tag" as="select">
+          <div className={css.formGroup}>
+            <label htmlFor="tag">Tag</label>
+            <Field id="tag" name="tag" as="select" className={css.select}>
               {["Todo", "Work", "Personal", "Meeting", "Shopping"].map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
               ))}
             </Field>
-            <ErrorMessage name="tag" component="div" />
-          </label>
+            <ErrorMessage name="tag" component="div" className={css.error} />
+          </div>
 
           <div className={css.actions}>
-            <button type="button" onClick={onClose}>
+            <button
+              type="button"
+              className={css.cancelButton}
+              onClick={onClose}
+            >
               Cancel
             </button>
-            <button type="submit" disabled={isSubmitting || mutation.isPending}>
+            <button
+              type="submit"
+              className={css.submitButton}
+              disabled={isSubmitting || mutation.isPending}
+            >
               Create note
             </button>
           </div>

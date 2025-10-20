@@ -23,7 +23,7 @@ export default function NoteDetailsClient({
     queryFn: () => fetchNoteById(noteId),
     initialData: initialNote,
     staleTime: 30_000,
-    refetchOnMount: false, // Додаємо, як просив викладач
+    refetchOnMount: false,
   });
 
   if (isLoading) return <p>Loading...</p>;
@@ -31,12 +31,16 @@ export default function NoteDetailsClient({
   if (!note) return <p>Note not found.</p>;
 
   return (
-    <div className={css.noteDetails}>
-      <h2 className={css.title}>{note.title}</h2>
-      <p className={css.content}>{note.content}</p>
-      <p className={css.date}>
-        Created at: {new Date(note.createdAt).toLocaleString()}
-      </p>
+    <div className={css.container}>
+      <div className={css.item}>
+        <div className={css.header}>
+          <h2>{note.title}</h2>
+        </div>
+        <p className={css.content}>{note.content}</p>
+        <p className={css.date}>
+          Created at: {new Date(note.createdAt).toLocaleString()}
+        </p>
+      </div>
     </div>
   );
 }

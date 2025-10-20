@@ -1,5 +1,7 @@
 "use client";
 
+import css from "./Pagination.module.css";
+
 interface PaginationProps {
   pageCount: number;
   currentPage: number;
@@ -14,16 +16,16 @@ export default function Pagination({
   const pages = Array.from({ length: pageCount }, (_, i) => i + 1);
 
   return (
-    <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
+    <ul className={css.pagination}>
       {pages.map((page) => (
-        <button
+        <li
           key={page}
-          style={{ fontWeight: page === currentPage ? "bold" : "normal" }}
+          className={page === currentPage ? css.active : ""}
           onClick={() => onPageChange(page)}
         >
-          {page}
-        </button>
+          <a>{page}</a>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }

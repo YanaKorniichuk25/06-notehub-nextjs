@@ -14,16 +14,18 @@ export default function SearchBox({
 }: SearchBoxProps) {
   const [value, setValue] = useState("");
 
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = e.target.value;
+    setValue(v);
+    onChange(v);
+  };
+
   return (
     <input
       type="text"
       className={css.input}
       value={value}
-      onChange={(e) => {
-        const v = e.target.value;
-        setValue(v);
-        onChange(v);
-      }}
+      onChange={handleChange}
       placeholder={placeholder}
     />
   );
