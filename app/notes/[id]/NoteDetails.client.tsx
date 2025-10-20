@@ -23,6 +23,7 @@ export default function NoteDetailsClient({
     queryFn: () => fetchNoteById(noteId),
     initialData: initialNote,
     staleTime: 30_000,
+    refetchOnMount: false, // Додаємо, як просив викладач
   });
 
   if (isLoading) return <p>Loading...</p>;

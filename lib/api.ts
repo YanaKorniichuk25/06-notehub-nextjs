@@ -1,54 +1,71 @@
 import axios from "axios";
-import { useQuery } from "@tanstack/react-query";
-import { Note, NotesResponse } from "@/types/note";
+import toast from "react-hot-toast";
+import { Note } from "@/types/note";
 
-const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN ?? "";
+const token = process.env.NEXT_PUBLIC_NOTEHUB_TOKEN;
 
+// Axios defaults
 const api = axios.create({
   baseURL:
     process.env.NEXT_PUBLIC_NOTEHUB_BASE_URL ??
     "https://notehub-public.goit.study/api",
   headers: {
+    accept: "application/json",
     Authorization: token ? `Bearer ${token}` : undefined,
     "Content-Type": "application/json",
   },
 });
 
-export const fetchNotes = async (params?: {
-  q?: string;
-  page?: number;
-}): Promise<NotesResponse> => {
-  const { q, page = 1 } = params ?? {};
-  const queryParams: Record<string, string | number> = { page };
-  if (q?.trim()) queryParams.q = q;
+// Error notifications
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const message =
+      error.response?.data?.message || error.message || "Unknown error";
+    toast.error(`API Error: ${message}`);
+    return Promise.reject(error);
+  }
+);
 
-  const resp = await api.get<NotesResponse>("/notes", { params: queryParams });
-  return resp.data;
-};
+export interface NotesResponse {
+  notes: Note[];
+  totalPages: number;
+}
 
-// ✅ додаємо кастомний хук, який очікує компонент Notes.client.tsx
-export const useFetchNotes = (page: number, q: string) => {
-  return useQuery<NotesResponse, Error>({
-    queryKey: ["notes", page, q],
-    queryFn: () => fetchNotes({ page, q }),
-    placeholderData: (prev) => prev, // тримає попередні дані під час оновлення
+// API-функції
+export const fetchNotes = async (
+  page: number,
+  search: string
+): Promise<NotesResponse> => {
+  const { data } = await api.get<{
+    data: { items: Note[]; totalPages: number };
+  }>("/notes", {
+    params: { page, perPage: 12, search },
   });
+
+  const items = data.data?.items ?? [];
+  const totalPages = data.data?.totalPages ?? 1;
+
+  return { notes: items, totalPages };
 };
 
 export const fetchNoteById = async (id: string): Promise<Note> => {
-  const resp = await api.get<{ data: Note }>(`/notes/${id}`);
-  return resp.data.data;
+  const { data } = await api.get<{ data: Note }>(`/notes/${id}`);
+  return data.data;
 };
 
-export const createNote = async (payload: {
+export const createNote = async (noteData: {
   title: string;
   content: string;
   tag: string;
 }): Promise<Note> => {
-  const resp = await api.post<{ data: Note }>("/notes", payload);
-  return resp.data.data;
+  const { data } = await api.post<{ data: Note }>("/notes", noteData);
+  toast.success("Note added successfully!");
+  return data.data;
 };
 
-export const deleteNote = async (id: string): Promise<void> => {
-  await api.delete(`/notes/${id}`);
+export const deleteNote = async (id: string): Promise<Note> => {
+  const { data } = await api.delete<{ data: Note }>(`/notes/${id}`);
+  toast.success("Note deleted successfully!");
+  return data.data;
 };
