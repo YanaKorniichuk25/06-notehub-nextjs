@@ -4,20 +4,18 @@ import { useState } from "react";
 import css from "./SearchBox.module.css";
 
 export interface SearchBoxProps {
+  value: string;
   onChange: (value: string) => void;
   placeholder?: string;
 }
 
 export default function SearchBox({
+  value,
   onChange,
   placeholder = "Search notes...",
 }: SearchBoxProps) {
-  const [value, setValue] = useState("");
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const v = e.target.value;
-    setValue(v);
-    onChange(v);
+    onChange(e.target.value);
   };
 
   return (
