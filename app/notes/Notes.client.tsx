@@ -1,64 +1,73 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchNotes } from "@/lib/api";
+import { fetchNotes, NotesResponse } from "@/lib/api";
 import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
-import NoteList from "@/components/NoteList/NoteList";
 import Modal from "@/components/Modal/Modal";
 import NoteForm from "@/components/NoteForm/NoteForm";
+import NoteList from "@/components/NoteList/NoteList";
+import css from "./NotesPage.module.css";
 
-function useDebounce<T>(value: T, delay: number): T {
-  const [debouncedValue, setDebouncedValue] = useState(value);
+function useDebounce<T>(value: T, delay = 300): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
   useEffect(() => {
     const handler = setTimeout(() => setDebouncedValue(value), delay);
     return () => clearTimeout(handler);
   }, [value, delay]);
+
   return debouncedValue;
 }
 
-export default function NotesListClient({
-  page,
-  search,
-}: {
+// Додаємо пропси, щоб відповідало вимогам викладача
+interface NotesClientProps {
   page: number;
   search: string;
-}) {
-  const [currentPage, setCurrentPage] = useState(page);
-  const [searchQuery, setSearchQuery] = useState(search);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+}
 
-  const debouncedSearch = useDebounce(searchQuery, 500);
+export default function NotesClient({ page, search }: NotesClientProps) {
+  const [currentPage, setCurrentPage] = useState<number>(page);
+  const [searchQuery, setSearchQuery] = useState<string>(search);
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
-  const { data, isLoading, isError } = useQuery({
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
     queryKey: ["notes", currentPage, debouncedSearch],
     queryFn: () => fetchNotes(currentPage, debouncedSearch),
+    // для останніх версій React Query: staleTime або placeholderData можна не використовувати
   });
 
+  // Скидаємо сторінку на 1 при зміні пошуку
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch]);
 
+  if (isLoading) return <p>Loading...</p>;
+  if (isError) return <p>Error loading notes</p>;
+
   return (
-    <section>
-      <SearchBox value={searchQuery} onChange={setSearchQuery} />
-      <button onClick={() => setIsModalOpen(true)}>Create note</button>
-      {isLoading && <p>Loading...</p>}
-      {isError && <p>Error loading notes</p>}
-      {data && <NoteList notes={data.notes} />}
-      {data && data.totalPages > 1 && (
-        <Pagination
-          pageCount={data.totalPages}
-          currentPage={currentPage}
-          onPageChange={setCurrentPage}
-        />
-      )}
+    <div className={css.container}>
+      <div className={css.controls}>
+        <button onClick={() => setIsModalOpen(true)}>Create note</button>
+        <SearchBox onChange={setSearchQuery} />
+      </div>
+
+      <NoteList notes={data?.notes ?? []} />
+
+      <Pagination
+        pageCount={data?.totalPages ?? 1}
+        currentPage={currentPage}
+        onPageChange={(p: number) => setCurrentPage(p)}
+      />
+
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
           <NoteForm onClose={() => setIsModalOpen(false)} />
         </Modal>
       )}
-    </section>
+    </div>
   );
 }

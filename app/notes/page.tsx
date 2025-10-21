@@ -10,7 +10,6 @@ export const metadata: Metadata = { title: "Notes — NoteHub" };
 export default async function NotesPage() {
   const queryClient = new QueryClient();
 
-  // Виправлено: fetchNotes очікує два аргументи (page, search)
   await queryClient.prefetchQuery({
     queryKey: ["notes", "", 1],
     queryFn: () => fetchNotes(1, ""),
@@ -18,7 +17,8 @@ export default async function NotesPage() {
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient />
+      {}
+      <NotesClient page={1} search="" />
     </HydrationBoundary>
   );
 }
