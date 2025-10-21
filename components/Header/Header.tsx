@@ -1,11 +1,12 @@
 "use client";
+
 import Link from "next/link";
 import css from "./Header.module.css";
 
-export function Header() {
+export const Header = () => {
   return (
     <header className={css.header}>
-      <Link href="/" aria-label="Home">
+      <Link href="/" aria-label="Home" className={css.logo}>
         NoteHub
       </Link>
       <nav aria-label="Main Navigation">
@@ -20,4 +21,4 @@ export function Header() {
       </nav>
     </header>
   );
-}
+};

@@ -21,7 +21,6 @@ function useDebounce<T>(value: T, delay = 300): T {
   return debouncedValue;
 }
 
-// Додаємо пропси, щоб відповідало вимогам викладача
 interface NotesClientProps {
   page: number;
   search: string;
@@ -34,25 +33,25 @@ export default function NotesClient({ page, search }: NotesClientProps) {
 
   const debouncedSearch = useDebounce(searchQuery, 300);
 
-  const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
-    queryKey: ["notes", currentPage, debouncedSearch],
-    queryFn: () => fetchNotes(currentPage, debouncedSearch),
-    // для останніх версій React Query: staleTime або placeholderData можна не використовувати
-  });
-
-  // Скидаємо сторінку на 1 при зміні пошуку
   useEffect(() => {
     setCurrentPage(1);
   }, [debouncedSearch]);
+
+  const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
+    queryKey: ["notes", currentPage, debouncedSearch],
+    queryFn: () => fetchNotes(currentPage, debouncedSearch),
+  });
 
   if (isLoading) return <p>Loading...</p>;
   if (isError) return <p>Error loading notes</p>;
 
   return (
-    <div className={css.container}>
-      <div className={css.controls}>
-        <button onClick={() => setIsModalOpen(true)}>Create note</button>
+    <div className={css.app}>
+      <div className={css.toolbar}>
         <SearchBox onChange={setSearchQuery} />
+        <button className={css.button} onClick={() => setIsModalOpen(true)}>
+          Create note
+        </button>
       </div>
 
       <NoteList notes={data?.notes ?? []} />

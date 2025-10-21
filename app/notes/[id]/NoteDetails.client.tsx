@@ -14,21 +14,19 @@ export default function NoteDetailsClient({
   noteId,
   initialNote,
 }: NoteDetailsProps) {
-  const {
-    data: note,
-    isLoading,
-    error,
-  } = useQuery<Note, Error>({
+  const { data: note, isLoading } = useQuery<Note, Error>({
     queryKey: ["note", noteId],
-    queryFn: () => fetchNoteById(noteId),
+    queryFn: () => fetchNoteById(noteId), // залишено рядком
     initialData: initialNote,
-    staleTime: 30_000,
     refetchOnMount: false,
+    staleTime: 30_000,
   });
 
-  if (isLoading) return <p>Loading...</p>;
-  if (error) return <p>Error: {error.message}</p>;
-  if (!note) return <p>Note not found.</p>;
+  if (isLoading) {
+    return <p>Loading, please wait...</p>;
+  }
+
+  if (!note) return null; // нічого не рендеримо, якщо нотатку не отримано
 
   return (
     <div className={css.container}>
@@ -37,6 +35,7 @@ export default function NoteDetailsClient({
           <h2>{note.title}</h2>
         </div>
         <p className={css.content}>{note.content}</p>
+        <p className={css.tag}>{note.tag}</p>
         <p className={css.date}>
           Created at: {new Date(note.createdAt).toLocaleString()}
         </p>

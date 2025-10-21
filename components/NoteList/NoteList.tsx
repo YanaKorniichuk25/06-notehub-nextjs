@@ -36,11 +36,13 @@ export default function NoteList({ notes }: NoteListProps) {
     <ul className={css.list}>
       {notes.map((note) => (
         <li key={note.id} className={css.listItem}>
-          <h2 className={css.title}>{note.title}</h2>
-          <p className={css.content}>{note.content}</p>
+          <div>
+            <h3 className={css.title}>{note.title}</h3>
+            <p className={css.content}>{note.content}</p>
+          </div>
           <div className={css.footer}>
             <span className={css.tag}>{note.tag}</span>
-            <Link href={`/notes/${note.id}`} className={css.routerLink}>
+            <Link href={`/notes/${note.id}`} className={css.link}>
               View details
             </Link>
             <button

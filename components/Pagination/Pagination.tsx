@@ -1,6 +1,7 @@
 "use client";
 
 import ReactPaginate from "react-paginate";
+import css from "./Pagination.module.css";
 
 interface PaginationProps {
   pageCount: number;
@@ -23,8 +24,8 @@ export default function Pagination({
       breakLabel="..."
       marginPagesDisplayed={1}
       pageRangeDisplayed={2}
-      containerClassName="pagination"
-      activeClassName="active"
+      containerClassName={css.pagination}
+      activeClassName={css.active}
     />
   );
 }
