@@ -15,7 +15,6 @@ const api = axios.create({
   },
 });
 
-// Перехоплення помилок
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -30,6 +29,12 @@ export interface NotesResponse {
   notes: Note[];
   totalPages: number;
 }
+
+export type CreateNoteInput = {
+  title: string;
+  content: string;
+  tag: "Todo" | "Work" | "Personal" | "Meeting" | "Shopping";
+};
 
 export const fetchNotes = async (
   page: number,
@@ -50,7 +55,7 @@ export const fetchNoteById = async (id: string): Promise<Note> => {
   return data;
 };
 
-export const createNote = async (note: Omit<Note, "id">): Promise<Note> => {
+export const createNote = async (note: CreateNoteInput): Promise<Note> => {
   const { data } = await api.post<Note>("/notes", note);
   toast.success("Note added successfully!");
   return data;
