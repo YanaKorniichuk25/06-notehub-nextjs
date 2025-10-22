@@ -15,16 +15,18 @@ export default function SearchBox({
   const [value, setValue] = useState("");
 
   return (
-    <input
-      type="text"
-      className={css.input}
-      value={value}
-      onChange={(e) => {
-        const v = e.target.value;
-        setValue(v);
-        onChange(v);
-      }}
-      placeholder={placeholder}
-    />
+    <div className={css.container}>
+      <input
+        type="text"
+        className={css.input}
+        value={value}
+        onChange={(e) => {
+          const v = e.target.value;
+          setValue(v);
+          onChange(v);
+        }}
+        placeholder={placeholder}
+      />
+    </div>
   );
 }

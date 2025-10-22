@@ -40,6 +40,7 @@ export default function NotesClient({ page, search }: NotesClientProps) {
   const { data, isLoading, isError } = useQuery<NotesResponse, Error>({
     queryKey: ["notes", currentPage, debouncedSearch],
     queryFn: () => fetchNotes(currentPage, debouncedSearch),
+    placeholderData: (previousData) => previousData,
   });
 
   if (isLoading) return <p>Loading...</p>;
