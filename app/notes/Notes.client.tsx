@@ -57,11 +57,13 @@ export default function NotesClient({ page, search }: NotesClientProps) {
 
       <NoteList notes={data?.notes ?? []} />
 
-      <Pagination
-        pageCount={data?.totalPages ?? 1}
-        currentPage={currentPage}
-        onPageChange={(p: number) => setCurrentPage(p)}
-      />
+      {data && data.totalPages > 1 && (
+        <Pagination
+          pageCount={data.totalPages}
+          currentPage={currentPage}
+          onPageChange={(p: number) => setCurrentPage(p)}
+        />
+      )}
 
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
